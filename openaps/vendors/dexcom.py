@@ -17,6 +17,8 @@ import itertools
 import time
 import argparse
 import socket
+import sys
+import logging
 
 def set_config (args, device):
   return
@@ -24,8 +26,9 @@ def set_config (args, device):
 def display_device (device):
   return ''
 
-use = Registry( )
+logger = logging.getLogger(__name__)
 
+use = Registry( )
 get_uses = use.get_uses
 
 
@@ -37,10 +40,15 @@ class scan (Use):
     return readdata.Dexcom.FindDevice( )
   def before_main (self, args, app):
     self.port = self.scanner( )
+
     # set model = G5 in config
     model = self.device.get('model', 'G4').upper( )
     G5 = model == 'G5'
     self.dexcom = self.port and readdata.GetDevice(self.port, G5=G5) or None
+
+    if not self.dexcom:
+      logger.error('Dexcom device not found. Is it connected?')
+      sys.exit(1)
   def main (self, args, app):
     return self.port or ''
 

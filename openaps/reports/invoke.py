@@ -3,11 +3,8 @@
 invoke   - generate a report
 """
 from __future__ import print_function
-from openaps.reports.report import Report
-from openaps import uses
 import reporters
 import sys
-import argparse
 
 def configure_app (app, parser):
   """
@@ -32,22 +29,13 @@ def main (args, app):
     for k, v in report.fields.items( ):
       setattr(args, k, v)
     """
-    # print args
-    print(report.format_url( ))
-    repo = app.git_repo( )
 
     try:
         output = task.method(args, app)
     except Exception as e:
-        print(report.name, ' raised ', e, file=sys.stderr)
-        # save prior progress in git
-        app.epilog( )
-        # ensure we still blow up with non-zero exit
-        raise
+        # log and save prior progress in git
+        app.logger.exception('%s raised %s' % (report.name, e), extra={ 'log_git': True })
+        sys.exit(1) # ensure we still blow up with non-zero exit
     else:
         reporters.Reporter(report, device, task)(output)
-        print('reporting', report.name)
-        repo.git.add([report.name], write_extension_data=False)
-        # XXX: https://github.com/gitpython-developers/GitPython/issues/265o
-        # GitPython <  0.3.7, this can corrupt the index
-        # repo.index.add([report.name])
+        app.logger.info('invoked report %s (%s)' % (report.name, report.format_url()), extra={ 'log_git': True })

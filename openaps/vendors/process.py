@@ -95,7 +95,7 @@ class shell (Use):
         command.append(getattr(args, opt))
     command.extend(getattr(args, 'remainder', []))
     command = shlex.split(' '.join(command))
-    proc = subprocess.Popen(command, stdout=PIPE)
+    proc = subprocess.Popen(command, stdout=PIPE) # @todo:david we should output these subcommands to our logs http://stackoverflow.com/a/21978778/477632
     output, stderr = proc.communicate( )
     # output = check_output(command, shell=True)
     return output

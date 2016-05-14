@@ -1,9 +1,20 @@
 #! /bin/bash
 
 name=$1
-git init $name
+
+if [ -z $name ]; then name='.'; fi # default to current dir if no $name
 
 (
+# If a git repo already exists, no need to continue. Assume the user is managing one themselves.
+if [ -d $name/.git ]; then
+    echo "Repo already exists."
+    test -n $name && cd $name
+    touch openaps.ini
+    exit 0
+fi
+
+git init $name
+
 test -n $name && cd $name
 touch openaps.ini
 git add openaps.ini

@@ -9,6 +9,7 @@ from openaps.glucose.convert import Convert as GlucoseConvert
 import decocare
 import argparse
 import json
+import sys
 from decocare import stick, session, link, commands, history
 from datetime import datetime
 from dateutil import relativedelta
@@ -43,10 +44,14 @@ class scan (Use):
   """ scan for usb stick """
   def configure_app (self, app, parser):
     pass
-    # print "hahaha"
   def scanner (self):
     from decocare.scan import scan
-    return scan( )
+    result = scan( )
+    if not result:
+      openaps_logger = logging.getLogger(__name__)
+      openaps_logger.error('Medtronic dongle not found. Is it connected?')
+      sys.exit(1)
+    return result
   def main (self, args, app):
     return self.scanner( )
 

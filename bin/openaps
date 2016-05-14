@@ -68,7 +68,7 @@ openaps init myopenaps - this creates an instance of openaps in a new
 cd myopenaps - change directory to root of new repo
 
 A valid instance of openaps is a git repo with a file called
-openaps.ini present.
+openaps.ini present. @todo:david change this documentation, in other places too
 
 openaps will track configuration and some status information inside of
 openaps.ini.  If you already have a git repo which you would like to
