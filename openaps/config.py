@@ -13,6 +13,14 @@ class Config (SafeConfigParser):
           r'(?P<value>.*)$'                     # everything up to eol
           )
   ini_name = 'openaps.ini'
+  
+  def __init__(self, *args, **kwargs):
+    """ If not otherwise set, allow environment variables to be set in our config.
+    useful for storing sensitive info outside of main config """
+    # @todo:david not sure if there's a safer way to do this. Need to test.
+    if 'defaults' not in kwargs:
+      kwargs['defaults'] = os.environ
+    SafeConfigParser.__init__(self, *args, **kwargs)
   def set_ini_path (self, ini_path='openaps.ini'):
     self.ini_name = ini_path
   def save (self):

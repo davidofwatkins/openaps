@@ -11,6 +11,7 @@ import argcomplete
 import openaps
 from openaps import cli
 from openaps import builtins
+from openaps import get_config_path
 
 
 COMMON_COMMANDS = [ 'init', 'alias', 'help', 'use',
@@ -148,8 +149,10 @@ openaps report commands map openaps use commands to filenames:
   def run (self, args):
     if args.config:
       os.environ['OPENAPS_CONFIG'] = args.config
-      os.chdir(os.path.dirname(args.config))
-    if args.command in ['help', None]:
+      if '/' in args.config: os.chdir(os.path.dirname(args.config))
+    if args.command not in ['init', 'help', None] and not get_config_path():
+      print "Not an openaps environment, run: openaps init"
+    elif args.command in ['help', None]:
       self.parser.print_help( )
     elif builtins.is_builtin(args.command):
       builtins.dispatch(args, self)

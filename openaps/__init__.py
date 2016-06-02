@@ -13,21 +13,35 @@ import logging
 import os
 from loggers import setup_logging
 from json import loads
-from ConfigParser import NoOptionError
+from ConfigParser import NoOptionError, NoSectionError
 import config
 
 _active_config = None
 
+
+def get_config_path():
+  """ Get the path to our config file, if available. """
+
+  cfg_file = os.environ.get('OPENAPS_CONFIG', 'openaps.ini')
+  if not os.path.exists(cfg_file):
+    return None
+
+  return cfg_file
+
 def read_config():
-  """ Global method that allows any OpenAPS code to retrieve the user's config. """
+  """ Global method that allows any OpenAPS code to retrieve the user's config.
+  Requires the OPENAPS_CONFIG environment variable to be set or an openaps.ini file in the
+  current working directory. """
 
   global _active_config
   if _active_config: return _active_config
 
-  cfg_file = os.environ.get('OPENAPS_CONFIG', 'openaps.ini')
-  if not os.path.exists(cfg_file):
-    print "Not an openaps environment, run: openaps init"
-    sys.exit(1)
+  cfg_file = get_config_path()
+  if not cfg_file:
+    # We should always have a cfg_file at this point because we only let very limited commands
+    # through openaps.run() without a set config file. But just in case:
+    raise Exception("Unable to find openaps config: %s" % cfg_file)
+
   pwd = os.getcwd( )
   cfg_dir = os.path.dirname(cfg_file)
   if cfg_dir and os.getcwd( ) != cfg_dir:
@@ -53,14 +67,18 @@ def get_config_var(section, option, default=None, type=None):
   """
 
   config = read_config()
+  if not config: return None
 
   try:
     if type == 'boolean': return config.getboolean(section, option)
     if type == 'int': return config.getint(section, option)
     if type == 'float': return config.getfloat(section, option)
 
+    # Try to get the config if section exists
+    try: value = config.get(section, option)
+    except NoSectionError: return None
+    
     # If no type set, try to parse it as JSON:
-    value = config.get(section, option)
     try: value = loads(value)
     except ValueError: pass
     return value
@@ -68,6 +86,7 @@ def get_config_var(section, option, default=None, type=None):
   except (ValueError, NoOptionError):
     return default
 
-# Initialize Logging
-logger = logging.getLogger(__name__)
-setup_logging(logger) # pass our logger to setup_logging() so it uses the global openaps logger, not openaps.loggers
+# Initialize logging, if there is a config file
+if get_config_path():
+  # pass our logger to setup_logging() so it uses the global openaps logger, not openaps.loggers
+  setup_logging(logging.getLogger(__name__))

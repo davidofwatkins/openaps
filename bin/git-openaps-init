@@ -5,18 +5,16 @@ name=$1
 if [ -z $name ]; then name='.'; fi # default to current dir if no $name
 
 (
-# If a git repo already exists, no need to continue. Assume the user is managing one themselves.
-if [ -d $name/.git ]; then
-    echo "Repo already exists."
-    test -n $name && cd $name
-    touch openaps.ini
-    exit 0
-fi
-
-git init $name
 
 test -n $name && cd $name
 touch openaps.ini
-git add openaps.ini
-git commit -avm "initializing $(openaps --version 2>&1)"
+
+if [ ! -d $name/.git ]; then
+  git init
+  git add openaps.ini
+  git commit -avm "initializing $(openaps --version 2>&1)"
+else # assume user is managing their own repo
+  echo "Git repo already exists. Ignoring..."
+fi
+
 )
