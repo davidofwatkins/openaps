@@ -69,22 +69,20 @@ def get_config_var(section, option, default=None, type=None):
   config = read_config()
   if not config: return None
 
+  # Try to get the config if section exists
   try:
     if type == 'boolean': return config.getboolean(section, option)
     if type == 'int': return config.getint(section, option)
     if type == 'float': return config.getfloat(section, option)
 
-    # Try to get the config if section exists
-    try: value = config.get(section, option)
-    except NoSectionError: return None
-    
-    # If no type set, try to parse it as JSON:
-    try: value = loads(value)
-    except ValueError: pass
-    return value
-
-  except (ValueError, NoOptionError):
+    value = config.get(section, option)
+  except (ValueError, NoSectionError, NoOptionError):
     return default
+  
+  # If no type set, try to parse it as JSON:
+  try: value = loads(value)
+  except ValueError: pass
+  return value
 
 # Initialize logging, if there is a config file
 if get_config_path():

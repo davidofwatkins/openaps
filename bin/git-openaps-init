@@ -5,7 +5,6 @@ name=$1
 if [ -z $name ]; then name='.'; fi # default to current dir if no $name
 
 (
-
 test -n $name && cd $name
 touch openaps.ini
 
@@ -16,5 +15,4 @@ if [ ! -d $name/.git ]; then
 else # assume user is managing their own repo
   echo "Git repo already exists. Ignoring..."
 fi
-
 )
