@@ -30,12 +30,13 @@ def main (args, app):
       setattr(args, k, v)
     """
 
+    app.logger.info('Reporting: %s' % report.name)
     try:
         output = task.method(args, app)
     except Exception as e:
         # log and save prior progress in git
-        app.logger.exception('%s raised %s' % (report.name, e), extra={ 'log_git': True })
+        app.logger.exception('%s raised %s' % (report.name, e), extra={'log_git': True})
         sys.exit(1) # ensure we still blow up with non-zero exit
     else:
         reporters.Reporter(report, device, task)(output)
-        app.logger.info('invoked report %s (%s)' % (report.name, report.format_url()), extra={ 'log_git': True })
+        app.logger.info('Finished report: %s' % report.format_url(), extra={'log_git': True})

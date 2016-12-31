@@ -2,6 +2,7 @@
 from ConfigParser import SafeConfigParser
 import re
 import os
+from copy import copy
 
 class Config (SafeConfigParser):
   OPTCRE = re.compile(
@@ -17,7 +18,6 @@ class Config (SafeConfigParser):
   def __init__(self, *args, **kwargs):
     """ If not otherwise set, allow environment variables to be set in our config.
     useful for storing sensitive info outside of main config """
-    # @todo:david not sure if there's a safer way to do this. Need to test.
     if 'defaults' not in kwargs:
       kwargs['defaults'] = os.environ
     SafeConfigParser.__init__(self, *args, **kwargs)
@@ -72,5 +72,16 @@ class Config (SafeConfigParser):
       config.set_ini_path('openaps.ini')
       config.read(defaults)
     return config
+
+  def write(self, file):
+    """ A hack to not persist our defaults (which we fill with environment vars above)
+    to the config file. The defaults aren't otherwise used, so it should be safe to
+    wipe them out. """
+
+    tmp_defaults = copy(self._defaults)
+    self._defaults = None
+    SafeConfigParser.write(self, file)
+    self._defaults = tmp_defaults
+
 
 

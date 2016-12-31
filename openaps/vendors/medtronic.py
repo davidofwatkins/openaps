@@ -14,6 +14,9 @@ from decocare import stick, session, link, commands, history
 from datetime import datetime
 from dateutil import relativedelta
 from dateutil.parser import parse
+import logging
+
+logger = logging.getLogger(__name__)
 
 def configure_use_app (app, parser):
   pass
@@ -153,6 +156,9 @@ class MedtronicTask (scan):
 
   def get_model (self):
     model = self.pump.read_model( ).getData( )
+    if not model:
+      logger.error('Unable to communcate with Medtronic device. Out of range or low battery?')
+      sys.exit(1)
     return model
   def setup_medtronic (self):
     log = logging.getLogger(decocare.__name__)
