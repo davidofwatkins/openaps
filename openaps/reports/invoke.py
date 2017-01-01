@@ -34,6 +34,8 @@ def main (args, app):
     try:
         output = task.method(args, app)
     except Exception as e:
+        app.epilog( )
+
         # log and save prior progress in git
         app.logger.exception('%s raised %s' % (report.name, e), extra={'log_git': True})
         sys.exit(1) # ensure we still blow up with non-zero exit
